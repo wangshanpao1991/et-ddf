@@ -27,14 +27,14 @@ sensors:
   lin_rel_pub_rate: 10
   
 active_auvs:
-  - agent_0
-  - agent_1
-  - agent_2
-  - agent_3
+  # - agent_0
+  # - agent_1
+  # - agent_2
+  # - agent_3
   # - case
   # - deckard
   # - hal
-  # - ava
+  - ava
 
 agent_0:
   planner: linear
@@ -130,6 +130,14 @@ hal:
 
 ava:
   planner: linear
-  start_pos: random
-  start_twist: random
   comm_drop_prob: 0.0
+  start_pos:           # either x,y,z,psi or 'random'
+    x: 0
+    y: 0
+    z: 0
+    psi: 0
+  start_twist:
+    x: 0.1
+    y: 0.0
+    z: 0
+    psi: 0
