@@ -3,7 +3,7 @@ import rospy
 import threading
 from nav_msgs.msg import Odometry
 import numpy as np
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 
 class Kalman:
     def __init__(self):
@@ -12,8 +12,8 @@ class Kalman:
         rospy.Subscriber("/ava/pose_noise", Odometry, self.noise_callback)
         self.pub = rospy.Publisher("/ava/estimate", Float32MultiArray, queue_size=10)
 
-        self.mu = None
-        self.sigma = None
+        self.mu = np.zeros((2,1))
+        self.sigma = np.zeros((2,2))
         self.last_update_time = None
         self.Q = np.array([[.01, 0], [0, 0.01]])
         self.R = np.array([[.01, 0], [0, 0.01]])
@@ -22,11 +22,16 @@ class Kalman:
     def run_filter(self):
         self.lock.acquire(True)
         f = Float32MultiArray()
-        f.data = [0, 1]
-        a = np.array([[2, 3],[4, 5]])
-        f.data.extend(list(a.flatten()))
+        mad = MultiArrayDimension()
+        mad.label = "Number of states"
+        mad.size = len(self.mu)
+        f.layout.dim.append(mad)
+        f.data = list(self.mu)
+        f.data.extend(list(self.sigma.flatten()))
         self.pub.publish(f)
         # print("running filter...")
+        self.mu += np.array([[0.001], [0.001]])
+        self.sigma += np.array([[0.01, 0],[0, 0.01]])
         self.lock.release()
 
     def noise_callback(self, msg):
