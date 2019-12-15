@@ -8,6 +8,8 @@ args="0 0 0 0 0 0 world map 100"/>
 	
 	<node name="point_sim_controller" pkg="etddf_ros" type="point_sim.py" output="screen"/>
 	<node name="converter" pkg="etddf_ros" type="converter.py" output="screen"/>
+	<node name="kalman" pkg="etddf_ros" type="kalman.py" output="screen"/>
+	<node name="plotter" pkg="etddf_ros" type="plotter.py" output="screen"/>
 	
 <!-- <group ns="ava"> -->
 	<!-- <node name="point_planner" pkg="etddf_ros" type="point_planner.py" /> -->
