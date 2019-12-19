@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+Takes in turtlesim teleop twist commands
+Outputs velocity commands to the simulator
+"""
 import rospy
 from geometry_msgs.msg import Twist, TwistStamped
 
@@ -10,7 +14,7 @@ class Converter:
         self.internal_y = 0
 
     def callback(self, msg):
-        self.internal_x += msg.linear.x * (0.5) * 0.1
+        self.internal_x += msg.linear.x * (0.5) * 0.1 # integration
         self.internal_y += msg.angular.z * 0.5 * 0.1
 
         t = TwistStamped()

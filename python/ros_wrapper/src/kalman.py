@@ -10,6 +10,7 @@ class Kalman:
         self.lock = threading.Lock()
         self.meas_queue = []
         rospy.Subscriber("/ava/pose_noise", Odometry, self.noise_callback)
+        rospy.Subscriber("/ava/measurements", Float32MultiArray, self.meas_callback)
         self.pub = rospy.Publisher("/ava/estimate", Float32MultiArray, queue_size=10)
 
         self.mu = np.zeros((2,1))
@@ -17,6 +18,9 @@ class Kalman:
         self.last_update_time = None
         self.Q = np.array([[.01, 0], [0, 0.01]])
         self.R = np.array([[.01, 0], [0, 0.01]])
+
+    def meas_callback(self, msg):
+        pass # TODO
 
     # I'll want a separate callback for running the filter --> will need to add a lock then
     def run_filter(self):
