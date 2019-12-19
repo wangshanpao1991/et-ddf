@@ -4,18 +4,18 @@ import rospy
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float32MultiArray
 import numpy as np
-from matplotlib.patches import Ellipse
+from matplotlib.patches import Ellipse, Circle
 import matplotlib.pyplot as plt
 from geometry_msgs.msg import Point, Pose, PoseArray
+import os
+import time
 
 class Plotter:
 
-    def __init__(self):
-        rospy.Subscriber("/ava/pose_gt", Odometry, self.pose_gt_callback)
-        rospy.Subscriber("/ava/estimate", Float32MultiArray, self.pose_estimate_callback)
+    def __init__(self):        
         self.landmark_debug_pub = rospy.Publisher("landmark_poses/", PoseArray, queue_size=10)
         self.meas_pub = rospy.Publisher("/ava/measurements", Float32MultiArray, queue_size=10)
-        self.pose_gt = None
+        self.robot_point_gt = None
         self.pose_estimate = None
         self.landmarks = {}
         param_names = rospy.get_param_names()
@@ -28,13 +28,27 @@ class Plotter:
                 self.landmarks[p[-1]] = pt
         self.sensor_range = int(rospy.get_param("sensor_range"))
         self.sensor_noise = rospy.get_param("sensor_noise")
+        self.plot_path = "/tmp/plots"
+        self.create_plot_dir()
+        self.seq = 0
+
+        # Subscribe inputs
+        rospy.Subscriber("/ava/pose_gt", Odometry, self.pose_gt_callback)
+        rospy.wait_for_message("/ava/pose_gt", Odometry)
+        rospy.wait_for_message("/ava/pose_gt", Odometry)
+        rospy.Subscriber("/ava/estimate", Float32MultiArray, self.pose_estimate_callback)
+
+    def create_plot_dir(self):
+        try:
+            os.mkdir(self.plot_path)
+        except OSError:
+            print("Unable to create directory " + self.plot_path)
 
     def pose_gt_callback(self, msg):
-        self.pose_gt = msg.pose.pose
-        point = self.pose_gt.position
+        self.robot_point_gt = msg.pose.pose.position
 
         f = Float32MultiArray()
-        robot_arr = np.array([[point.x, point.y]]).T
+        robot_arr = np.array([[self.robot_point_gt.x, self.robot_point_gt.y]]).T
         for k in self.landmarks.keys():
             lmrk = self.landmarks[k]
             lmrk_arr = np.array([[lmrk.x, lmrk.y]]).T
@@ -47,16 +61,17 @@ class Plotter:
         self.meas_pub.publish(f)
 
     def pose_estimate_callback(self, msg):
-        self.pose_estimate = None
-        # Plot and save to /tmp/plots
         data = msg.data
         num_states = msg.layout.dim[0].size
-        mu = np.array([data[:num_states]])
-        cov = np.array([data[num_states:]]).reshape((num_states, num_states))
+        # mu = np.array([data[:num_states]]).T
+        mu = np.array([[0.5,0.5]]).T
+        sigma = np.array([data[num_states:]]).reshape((num_states, num_states))
         # rospy.loginfo("plotting...")
         # print(mu)
         # print(cov)
         self.publish_debug_landmarks()
+        self.plot_data(mu, sigma)
+        self.seq += 1
 
     def publish_debug_landmarks(self):
         pa = PoseArray()
@@ -69,7 +84,41 @@ class Plotter:
             pa.poses.append(pose)
         self.landmark_debug_pub.publish(pa)
 
+    def plot_data(self, mu, sigma):
+        fig = plt.figure(0)
+        ax = fig.add_subplot(111, aspect='equal')
+
+        # Plot true robot + landmark positions
+        for k in self.landmarks.keys():
+            pt = self.landmarks[k]
+            pt_arr = np.array([[pt.x,pt.y]]).T
+            c = Circle(pt_arr, 0.25, color="r")
+            ax.add_artist(c)
+        pt_arr = np.array([[self.robot_point_gt.x, self.robot_point_gt.y]]).T
+        c = Circle(pt_arr, 0.25, color="b")
+        ax.add_artist(c)
+
+        # Plot mu with sigma (estimated positions + uncertainty)
+        c = Circle(mu, 0.25, color="g")
+        ax.add_artist(c)
+        ax.set_xlim(-7, 7)
+        ax.set_ylim(-7, 7)
+        plt.savefig(self.plot_path + "/plt" + str(self.seq) + ".png")
+        # plt.show()
+
+        # plot mean estimate (w/ covariance)
+        # plot estimates of all landmarks
+
+def create_plot_dir2(path):
+    try:
+        os.mkdir(path)
+    except OSError:
+        print("Unable to create directory " + path)
+
 def test_plotting():
+    path = "/tmp/plots"
+    create_plot_dir2(path)
+
     mu = np.zeros((2,1))
     # sigma = np.array([[2, 0], [0, 1]])
     sigma = np.array([[1, 1], [1, 4]])
@@ -99,9 +148,10 @@ def test_plotting():
     # e.set_alpha(rnd.rand())
     # e.set_facecolor(rnd.rand(3))
 
-    ax.set_xlim(-10, 10)
-    ax.set_ylim(-10, 10)
-    plt.show()
+    ax.set_xlim(-7, 7)
+    ax.set_ylim(-7, 7)
+    plt.savefig(path + "/plot.png")
+    # plt.show()
 
 if __name__ == "__main__":
     rospy.init_node("plotter")
