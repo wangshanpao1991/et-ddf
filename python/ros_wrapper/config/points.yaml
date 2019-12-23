@@ -1,7 +1,7 @@
 # point_sim_controller.py and point_planner.py config file
 
 sim:
-  update_freq: 50
+  update_freq: 25
   random_pose_min_max: [-100, 100]
   random_yaw: false
   
@@ -20,21 +20,9 @@ ava:
     z: 0
     psi: 0
 sensor_range: 2
-sensor_noise: 0.5
+sensor_noise_std: 0.5
 
 landmarks:
-  # A: [-2, 4]
-  # B: [1, 4]
-  # C: [3, 3]
-  # D: [-1, 2]
-  # E: [-3, 1]
-  # F: [3, 0]
-  # G: [1, -1]
-  # H: [3, -2]
-  # I: [-2, -2]
-  # J: [2, -4]
-  # K: [-1, -4]
-
   A: [-4, -2]
   B: [-4, 1]
   C: [-3, 3]

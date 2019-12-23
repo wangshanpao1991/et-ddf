@@ -18,8 +18,9 @@ class Converter:
         self.internal_y += msg.angular.z * 0.5 * 0.1
 
         t = TwistStamped()
-        t.twist.linear.x = self.internal_x
-        t.twist.linear.y = self.internal_y
+        # Flip x and y to actually align with the planes
+        t.twist.linear.x = -self.internal_y
+        t.twist.linear.y = self.internal_x
         self.pub.publish(t)
 
 if __name__ == "__main__":

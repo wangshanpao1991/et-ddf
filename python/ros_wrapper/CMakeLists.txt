@@ -56,6 +56,7 @@ add_message_files(
     MsgStats.msg
     depthMeasurement.msg
     usblMeasurement.msg
+    FloatArrayStamped.msg
 )
 
 ## Generate services in the 'srv' folder
