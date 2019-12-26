@@ -1,0 +1,4 @@
+../etddf.egg-info/
+src/*.bag
+src/*.pickle
+src/plots/*
