@@ -18,7 +18,7 @@ class Kalman:
         self.mu = np.zeros((2,1))
         self.sigma = np.eye(2)
         self.last_update_time = rospy.Time.now()
-        self.Q = np.array([[.0001, 0], [0, 0.0001]])
+        self.Q = np.array([[.001, 0], [0, 0.001]])
         self.R = np.eye(2) * (rospy.get_param("sensor_noise_std") ** 2)
         self.pub = rospy.Publisher("/ava/estimate", FloatArrayStamped, queue_size=10)
         rospy.Subscriber("/ava/pose_noise", Odometry, self.noise_callback)
