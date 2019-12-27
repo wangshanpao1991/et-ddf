@@ -20,7 +20,7 @@ ava:
     z: 0
     psi: 0
 sensor_range: 2
-sensor_noise_std: 2
+sensor_noise_std: 0.1
 
 landmarks:
   A: [-4, -2]

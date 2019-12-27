@@ -42,8 +42,10 @@ class PointSim:
         self.sensor_range = int(rospy.get_param("sensor_range"))
         self.sensor_noise_std = rospy.get_param("sensor_noise_std")
     
-    def publish_measurements(self, timestamp):
+    def publish_measurements(self, timestamp, control_twist):
         fsa = FloatArrayStamped()
+        fsa.fma.data.append(control_twist.linear.x)
+        fsa.fma.data.append(control_twist.linear.y)
         fsa.header.stamp = timestamp
         odom = self.auvs["ava"][ODOM_INDEX]
         robot_arr = np.array([[odom.pose.pose.position.x, odom.pose.pose.position.y]]).T
@@ -176,7 +178,7 @@ class PointSim:
             self.auvs[auv][ODOM_INDEX] = odom
             self.auvs[auv][PUB_INDEX].publish(odom)
             self.auvs[auv][NOISE_INDEX].publish(noise_odom)
-            self.publish_measurements(t_now)
+            self.publish_measurements(t_now, noise_odom.twist.twist)
         self.lock.release()
 
     def correct_angles(self, angle):
