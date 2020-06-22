@@ -6,7 +6,7 @@ delta_tiers: [1,2,5]
 
 ## Measurement topics
 measurement_topics:
-  imu_ci: None
+  imu_ci: odometry/filtered
   sonar: "sonar_processing/target_list"
   dvl: "dvl"
 
