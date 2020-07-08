@@ -238,13 +238,16 @@ class ETDDF_Node:
         cov = np.zeros((NUM_OWNSHIP_STATES, NUM_OWNSHIP_STATES))
         cov[:3, :3] = cov_point[:3,:3]
         cov[3:, 3:] = cov_twist[3:,3:]
+        
 
+        if np.trace(cov) < 1: # Prevent Nav Filter from having zero uncertainty
+            cov = np.eye(NUM_OWNSHIP_STATES) * 0.1
+        
         # Run covariance intersection
-        try:
-            c_bar, Pcc = self.filter.intersect(mean, cov)
-            self.correct_nav_filter(c_bar, Pcc, odom.header, odom)
-        except:
-            x = 1
+    
+        c_bar, Pcc = self.filter.intersect(mean, cov)
+        self.correct_nav_filter(c_bar, Pcc, odom.header, odom)
+       
 
         # TODO partial state update everything
 
