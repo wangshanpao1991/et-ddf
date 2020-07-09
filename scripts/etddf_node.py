@@ -244,9 +244,11 @@ class ETDDF_Node:
             cov = np.eye(NUM_OWNSHIP_STATES) * 0.1
         
         # Run covariance intersection
-    
-        c_bar, Pcc = self.filter.intersect(mean, cov)
-        self.correct_nav_filter(c_bar, Pcc, odom.header, odom)
+        try:
+            c_bar, Pcc = self.filter.intersect(mean, cov)
+            self.correct_nav_filter(c_bar, Pcc, odom.header, odom)
+        except:
+            x = 1
        
 
         # TODO partial state update everything
